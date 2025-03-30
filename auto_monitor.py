@@ -20,12 +20,14 @@ import subprocess
 import sys
 import time
 import urllib.request  # noqa F401
-
+import winsound
 import pandas as pd
-import pync
+# import pync
 import tushare as ts
 
-from utils.larkbot import LarkBot
+from plyer import notification
+
+# from utils.larkbot import LarkBot
 
 """
 description: 
@@ -34,30 +36,32 @@ param {*} text
 return {*}
 use: 
 """
+# Remove macOS-specific notification functions
+# ========== REMOVE THESE macOS FUNCTIONS ========== #
+# def show_notification(title, text):
+#     os.system(
+#         """
+#               osascript -e 'display notification "{}" with title "{}"'
+#               """.format(
+#             text, title
+#         )
+#     )
+# def show_notification_2(title, text):
+#     cmd = 'display notification "' + text + '" with title "' + title + '"'
+#     subprocess.call(["osascript", "-e", cmd])
+# """
+# 使用mac系统定时任务crontab设置告警通知的执行时间。
+# crontab设置过程
+#     1. 输入 crontab -e进入设置文本。
+#     2. 填写 */3 9-12,13-15 * * 1-5 /usr/local/anaconda3/bin/python /Users/charmve/Qbot/auto_monitor.py ，
+#     即周一到周五，上午9点到12点，下午1点到3点，每三分钟执行阀值告警。
+# """
 
+# ================================================== #
 
-def show_notification(title, text):
-    os.system(
-        """
-              osascript -e 'display notification "{}" with title "{}"'
-              """.format(
-            text, title
-        )
-    )
+# Initialize Windows notifier
+# toaster = ToastNotifier()
 
-
-def show_notification_2(title, text):
-    cmd = 'display notification "' + text + '" with title "' + title + '"'
-    subprocess.call(["osascript", "-e", cmd])
-
-
-"""
-使用mac系统定时任务crontab设置告警通知的执行时间。
-crontab设置过程
-    1. 输入 crontab -e进入设置文本。
-    2. 填写 */3 9-12,13-15 * * 1-5 /usr/local/anaconda3/bin/python /Users/charmve/Qbot/auto_monitor.py ，
-    即周一到周五，上午9点到12点，下午1点到3点，每三分钟执行阀值告警。
-"""
 
 stocks_pool = [
     {"code": "sz000063", "name": "中兴通讯", "min_threshold": "26", "max_threshold": "38"},
@@ -113,21 +117,24 @@ def check(code, low, high):
         return False
 
 
-top_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-sounds_file = os.path.join(top_path, "./qbot/sounds/bell.wav")
+# top_path = os.path.dirname(os.path.abspath(sys.argv[0]))
+# sounds_file = os.path.join(top_path, "./qbot/sounds/bell.wav")
 
 while True:
-    WEBHOOK_SECRET = "wNMVU3ewSm2F0G2TwTX4Fd"
-    bot = LarkBot(secret=WEBHOOK_SECRET)
+    # 飞书的机器人提醒
+    # WEBHOOK_SECRET = "wNMVU3ewSm2F0G2TwTX4Fd"
+    # bot = LarkBot(secret=WEBHOOK_SECRET)
     if check("sh", 3300, 10000) or check("601318", 0, 49):
-        bot.send(content="[Signal💡] 中国平安 低于 ¥49")
+        # bot.send(content="[Signal💡] 中国平安 低于 ¥49")
 
         priceNow = 48
-        pync.notify(
-            f'{"中国平安"}当前价格为{priceNow}',
-            title=f'Qbot - {"中国平安"}股票已低于设定值{49}',
-            open="https://ufund-me.github.io/",
-            appIcon="./gui/imgs/logo.ico",
+        # Replace pync notification with win10toast
+        notification.notify(
+            title=f'{"中国平安"}当前价格为{priceNow}',
+            message=f'Qbot - {"中国平安"}股票已低于设定值{49}',
+            # open="https://ufund-me.github.io/",
+            app_icon=r"E:\workspace\Qbot\gui\imgs\logo.ico", # Path to .ico file
+            timeout=10  # Duration in seconds
         )
         # pync.notify(
         #     "Reminder - Drink Water, Sir",
@@ -147,7 +154,8 @@ while True:
         # if linux
         # os.system('play ./qbot/sounds/alert-bells.wav')
         # if MacOs
-        os.system(f"afplay {sounds_file}")
-
+        # os.system(f"afplay {sounds_file}")
+        # windows
+        # winsound.Beep(1000, 500)  # Frequency 1000Hz, duration 500ms
         #  exit()
     time.sleep(2)
